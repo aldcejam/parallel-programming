@@ -153,3 +153,15 @@ Matriz* carregar_matriz_arquivo(const char* nome_arquivo) {
     printf("Matriz de %dx%d carregada de: %s\n", qtdLinhas, qtdColunas, nome_arquivo);
     return matriz;
 }
+
+void imprimir_matriz(Matriz* matriz) {
+    if (!matriz) return;
+
+    printf("Matriz %dx%d:\n", matriz->qtdLinhas, matriz->qtdColunas);
+    for (int i = 0; i < matriz->qtdLinhas; i++) {
+        for (int j = 0; j < matriz->qtdColunas; j++) {
+            printf("%.4f | ", matriz->data[i][j]);
+        }
+        printf("\n");
+    }
+}

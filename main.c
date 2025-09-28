@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
-#include "./gerenciar-matriz/gerenciar-matriz.h"
+#include "gerenciar-matriz/gerenciar-matriz.h"
+#include "multiplicao-matriz/multiplicao-matriz.h" 
 
 void validarMatriz(int qtdColunasM1, int qtdLinhasM2) {  // Remover parâmetros não usados
     if (qtdColunasM1 != qtdLinhasM2) {
@@ -14,39 +15,37 @@ int main() {
     printf("Número máximo de threads: %d\n", max_threads);
     
     int qtdLinhasM1, qtdColunasM1, qtdLinhasM2, qtdColunasM2;
-    printf("Digite as dimensões das matrizes: (1º Matriz: linhas1 colunas1. 2º Matriz: linhas2 colunas2)\n");
-    scanf("%d %d %d %d", &qtdLinhasM1, &qtdColunasM1, &qtdLinhasM2, &qtdColunasM2);
+    
+    char opcao;
+    printf("Todos os lados iguais? (s/n): ");
+    scanf(" %c", &opcao);
+    
+    if (opcao == 's' || opcao == 'S') {
+        int lado;
+        printf("Digite o tamanho do lado: ");
+        scanf("%d", &lado);
+        
+        qtdLinhasM1 = lado;
+        qtdColunasM1 = lado;
+        qtdLinhasM2 = lado;
+        qtdColunasM2 = lado;
+    } else {
+        printf("Digite as dimensões das matrizes: (1º Matriz: linhas1 colunas1. 2º Matriz: linhas2 colunas2)\n");
+        scanf("%d %d %d %d", &qtdLinhasM1, &qtdColunasM1, &qtdLinhasM2, &qtdColunasM2);
+    }
+    
     validarMatriz(qtdColunasM1, qtdLinhasM2);
 
     Matriz* matrizEsquerda = alocar_matriz(qtdLinhasM1, qtdColunasM1);
+    gerar_matriz_aleatoria(matrizEsquerda);
+
     Matriz* matrizDireita = alocar_matriz(qtdLinhasM2, qtdColunasM2);
+    gerar_matriz_aleatoria(matrizDireita);
 
-    char tipoExecucao;
-    printf("Escolha o tipo de execução - (S)equencial ou (PT)aralela Thread, (PP)aralela Processos: ");
-    scanf(" %c", &tipoExecucao);
-
-    if (tipoExecucao == 'S' || tipoExecucao == 's') {
-        gerar_matriz_aleatoria(matrizEsquerda);
-        gerar_matriz_aleatoria(matrizDireita);
-        salvar_matriz_arquivo(matrizEsquerda, "_original");
-        salvar_matriz_arquivo(matrizDireita, "_original");
-    } else if (tipoExecucao == 'P' || tipoExecucao == 'p') {
-        char nomeArquivoM1[50], nomeArquivoM2[50];
-        printf("Digite os nomes dos arquivos das matrizes (ex: 3x3.txt):\n");
-        scanf("%s %s", nomeArquivoM1, nomeArquivoM2);
-        
-        matrizEsquerda = carregar_matriz_arquivo(nomeArquivoM1);
-        matrizDireita = carregar_matriz_arquivo(nomeArquivoM2);
-        
-        if (!matrizEsquerda || !matrizDireita) {
-            fprintf(stderr, "Erro ao carregar as matrizes dos arquivos.\n");
-            return EXIT_FAILURE;
-        }
-    } else {
-        fprintf(stderr, "Tipo de execução inválido. Use 'S' para sequencial ou 'P' para paralelo.\n");
-        return EXIT_FAILURE;
-    }
-
+    printf("Qual nome da analise? (Ex: Matriz_3-3): ");
+    char nomeAnalise[50];
+    scanf("%49s", nomeAnalise);
+    Matriz* matrizProduto = multiplicar_matrizes(matrizEsquerda, matrizDireita, "S", nomeAnalise);
 
     return 0;
 }

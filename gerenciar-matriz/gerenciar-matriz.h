@@ -19,5 +19,6 @@ void desalocar_matriz(Matriz* matriz);
 void gerar_matriz_aleatoria(Matriz* matriz);
 void salvar_matriz_arquivo(Matriz* matriz, const char* sufixo);
 Matriz* carregar_matriz_arquivo(const char* nome_arquivo);
+void imprimir_matriz(Matriz* matriz);
 
 #endif
