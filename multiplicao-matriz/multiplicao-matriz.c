@@ -1,4 +1,5 @@
 #include "multiplicao-matriz.h"
+#include <math.h> 
 
 FILE* gerar_arquivo_resultado(const char* nomeAnalise, const char* tipo_execucao, const char* nomeArquivo) {
     if (!tipo_execucao || !nomeAnalise || !nomeArquivo) return NULL;
@@ -93,8 +94,59 @@ Matriz* multiplicar_matrizes_sequencial(Matriz* m1, Matriz* m2, char* nomeAnalis
     return produto;
 }
 
+typedef struct {
+    int qtdColunas;
+    int linha;
+    int colunaInicio;
+} Elemento;
+
 Matriz* multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, int threadsOuProcessosDivisor) {
-    float quantidadeThreads = (m1->qtdLinhas * m2->qtdColunas) / threadsOuProcessosDivisor;
+    int qtdElementos = m1->qtdLinhas * m2->qtdColunas;
+    int quantidadeThreads = (int)ceil((double)qtdElementos / threadsOuProcessosDivisor);
+    int qtdMaxElementosPorThread = (int)ceil((double)qtdElementos / quantidadeThreads);
+
+    Elemento* elementos = malloc(qtdElementos * sizeof(Elemento));
+
+    int idx = 0;
+    for (int i = 0; i < m1->qtdLinhas; i++) {
+        for (int j = 0; j < m2->qtdColunas; j++) {
+            elementos[idx].linha = i;
+            elementos[idx].colunaInicio = j;
+            elementos[idx].qtdColunas = m2->qtdColunas;
+            idx++;
+        }
+    }
+
+    Elemento*** arrayThreads = malloc(quantidadeThreads * sizeof(Elemento**));
+
+    for (int i = 0; i < quantidadeThreads; i++) {
+        int elementosNestaThread;
+        
+        if (i == quantidadeThreads - 1) {
+            elementosNestaThread = qtdElementos - (i * qtdMaxElementosPorThread);
+        } else {
+            elementosNestaThread = qtdMaxElementosPorThread;
+        }
+        
+        arrayThreads[i] = malloc(elementosNestaThread * sizeof(Elemento*));
+    }
+
+    idx = 0;
+    for (int i = 0; i < quantidadeThreads; i++) {
+        int elementosNestaThread;
+        
+        if (i == quantidadeThreads - 1) {
+            elementosNestaThread = qtdElementos - (i * qtdMaxElementosPorThread);
+        } else {
+            elementosNestaThread = qtdMaxElementosPorThread;
+        }
+        
+        for (int j = 0; j < elementosNestaThread; j++) {
+            arrayThreads[i][j] = &elementos[idx];
+            idx += 1;
+        }
+    }
+
     return NULL;
 }
 

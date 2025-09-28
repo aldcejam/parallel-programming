@@ -9,7 +9,7 @@ $(shell mkdir -p dist/gerenciar-matriz dist/multiplicao-matriz)
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET)
+	$(CC) $(OBJ) -o $(TARGET) -lm
 
 dist/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
