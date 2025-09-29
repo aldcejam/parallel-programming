@@ -109,44 +109,23 @@ Matriz* multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, int thread
     printf("Elementos por thread (máximo): %d\n", qtdMaxElementosPorThread);
 
     Elemento* elementos = malloc(qtdElementos * sizeof(Elemento));
-
-    int idx = 0;
-    for (int i = 0; i < m1->qtdLinhas; i++) {
-        for (int j = 0; j < m2->qtdColunas; j++) {
-            elementos[idx].linha = i;
-            elementos[idx].colunaInicio = j;
-            elementos[idx].qtdColunas = m2->qtdColunas;
-            idx++;
+    for (int i = 0, idx = 0; i < m1->qtdLinhas; i++) {
+        for (int j = 0; j < m2->qtdColunas; j++, idx++) {
+            elementos[idx] = (Elemento){i, j, m2->qtdColunas};
         }
     }
 
     Elemento*** arrayThreads = malloc(quantidadeThreads * sizeof(Elemento**));
-
-    for (int i = 0; i < quantidadeThreads; i++) {
-        int elementosNestaThread;
-        
-        if (i == quantidadeThreads - 1) {
-            elementosNestaThread = qtdElementos - (i * qtdMaxElementosPorThread);
-        } else {
-            elementosNestaThread = qtdMaxElementosPorThread;
-        }
+    
+    for (int i = 0, idx = 0; i < quantidadeThreads; i++) {
+        int elementosNestaThread = (i == quantidadeThreads - 1) 
+            ? qtdElementos - (i * qtdMaxElementosPorThread) 
+            : qtdMaxElementosPorThread;
         
         arrayThreads[i] = malloc(elementosNestaThread * sizeof(Elemento*));
-    }
-
-    idx = 0;
-    for (int i = 0; i < quantidadeThreads; i++) {
-        int elementosNestaThread;
         
-        if (i == quantidadeThreads - 1) {
-            elementosNestaThread = qtdElementos - (i * qtdMaxElementosPorThread);
-        } else {
-            elementosNestaThread = qtdMaxElementosPorThread;
-        }
-        
-        for (int j = 0; j < elementosNestaThread; j++) {
+        for (int j = 0; j < elementosNestaThread; j++, idx++) {
             arrayThreads[i][j] = &elementos[idx];
-            idx += 1;
         }
     }
 
