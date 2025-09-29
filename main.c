@@ -46,6 +46,7 @@ int main() {
     char nomeAnalise[50];
     scanf("%49s", nomeAnalise);
     Matriz* matrizProduto = multiplicar_matrizes(matrizEsquerda, matrizDireita, "S", nomeAnalise, 2);
+    Matriz* matrizProdutoPT = multiplicar_matrizes(matrizEsquerda, matrizDireita, "PT", nomeAnalise, 3);
 
     return 0;
 }

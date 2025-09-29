@@ -146,6 +146,12 @@ Matriz* multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, int thread
             idx += 1;
         }
     }
+    
+    for (int i = 0; i < quantidadeThreads; i++) {
+        free(arrayThreads[i]);
+    }
+    free(arrayThreads);
+    free(elementos);
 
     return NULL;
 }
