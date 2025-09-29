@@ -104,6 +104,9 @@ Matriz* multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, int thread
     int qtdElementos = m1->qtdLinhas * m2->qtdColunas;
     int quantidadeThreads = (int)ceil((double)qtdElementos / threadsOuProcessosDivisor);
     int qtdMaxElementosPorThread = (int)ceil((double)qtdElementos / quantidadeThreads);
+    printf("Quantidade de elementos: %d\n", qtdElementos);
+    printf("Quantidade de threads: %d\n", quantidadeThreads);
+    printf("Elementos por thread (máximo): %d\n", qtdMaxElementosPorThread);
 
     Elemento* elementos = malloc(qtdElementos * sizeof(Elemento));
 
@@ -146,7 +149,47 @@ Matriz* multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, int thread
             idx += 1;
         }
     }
+
+    // PERCORRER E VERIFICAR O ARRAY DE ARRAYS DE PONTEIROS
+    printf("=== VERIFICAÇÃO DO ARRAY DE ARRAYS DE PONTEIROS ===\n");
+    printf("Quantidade total de threads: %d\n", quantidadeThreads);
+    printf("Quantidade total de elementos: %d\n", qtdElementos);
+    printf("Elementos por thread (máximo): %d\n\n", qtdMaxElementosPorThread);
+
+    int totalElementosVerificados = 0;
     
+    for (int i = 0; i < quantidadeThreads; i++) {
+        int elementosNestaThread;
+        
+        if (i == quantidadeThreads - 1) {
+            elementosNestaThread = qtdElementos - (i * qtdMaxElementosPorThread);
+        } else {
+            elementosNestaThread = qtdMaxElementosPorThread;
+        }
+        
+        printf("Thread %d: %d elementos\n", i, elementosNestaThread);
+        printf("----------------------------------------\n");
+        
+        for (int j = 0; j < elementosNestaThread; j++) {
+            Elemento* elem = arrayThreads[i][j];
+            printf("  [%d][%d] -> linha=%d, coluna=%d, qtdColunas=%d\n", 
+                   i, j, elem->linha, elem->colunaInicio, elem->qtdColunas);
+            
+            // Verificar se o ponteiro aponta para o elemento correto
+            int elementoIndex = elem - elementos; // cálculo do índice no array original
+            printf("        Ponteiro aponta para elementos[%d]\n", elementoIndex);
+            
+            totalElementosVerificados++;
+        }
+        printf("\n");
+    }
+
+    printf("=== RESUMO ===\n");
+    printf("Total de elementos verificados: %d\n", totalElementosVerificados);
+    printf("Total de elementos criados: %d\n", qtdElementos);
+    printf("Status: %s\n", (totalElementosVerificados == qtdElementos) ? "CORRETO" : "ERRO");
+
+    // Liberar memória (em uma implementação real você usaria antes de liberar)
     for (int i = 0; i < quantidadeThreads; i++) {
         free(arrayThreads[i]);
     }
