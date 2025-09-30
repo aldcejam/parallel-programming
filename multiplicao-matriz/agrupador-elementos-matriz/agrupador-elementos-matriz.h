@@ -15,6 +15,9 @@ typedef struct {
     Matriz* m2;
     Elemento** elementos;
     int qtdElementos;
+    int id_executor;           
+    char* nomeAnalise;         
+    char* tipo_execucao;       
 } ThreadData;
 
 void* processar_elementos(void* arg);

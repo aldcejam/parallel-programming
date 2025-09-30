@@ -29,7 +29,10 @@ Agrupador* agrupar_elementos(Matriz* m1, Matriz* m2, int divisor) {
             .m1 = m1,
             .m2 = m2,
             .elementos = elementosThread,
-            .qtdElementos = elementosNestaThread
+            .qtdElementos = elementosNestaThread,
+            .id_executor = 0,
+            .nomeAnalise = NULL,        
+            .tipo_execucao = NULL  
         };
     }
 
