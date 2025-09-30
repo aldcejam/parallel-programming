@@ -1,10 +1,10 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g -I.
-SRC = main.c gerenciar-matriz/gerenciar-matriz.c multiplicao-matriz/multiplicao-matriz.c
+SRC = main.c gerenciar-matriz/gerenciar-matriz.c multiplicao-matriz/multiplicao-matriz.c multiplicao-matriz/agrupador-elementos-matriz/agrupador-elementos-matriz.c
 OBJ = $(patsubst %.c,dist/%.o,$(SRC))
 TARGET = dist/main
 
-$(shell mkdir -p dist/gerenciar-matriz dist/multiplicao-matriz)
+$(shell mkdir -p dist/gerenciar-matriz dist/multiplicao-matriz dist/multiplicao-matriz/agrupador-elementos-matriz)
 
 all: $(TARGET)
 
