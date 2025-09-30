@@ -45,8 +45,10 @@ int main() {
     printf("Qual nome da analise? (Ex: Matriz_3-3): ");
     char nomeAnalise[50];
     scanf("%49s", nomeAnalise);
-    Matriz* matrizProduto = multiplicar_matrizes(matrizEsquerda, matrizDireita, "S", nomeAnalise, 2);
-    Matriz* matrizProdutoPT = multiplicar_matrizes(matrizEsquerda, matrizDireita, "PT", nomeAnalise, 3);
+
+/*     Matriz* matrizProduto = multiplicar_matrizes(matrizEsquerda, matrizDireita, "S", nomeAnalise, 2);
+    Matriz* matrizProdutoPT = multiplicar_matrizes(matrizEsquerda, matrizDireita, "PT", nomeAnalise, 3); */
+    Matriz* matrizProdutoPP = multiplicar_matrizes(matrizEsquerda, matrizDireita, "PP", nomeAnalise, 3);
 
     return 0;
 }

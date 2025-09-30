@@ -50,7 +50,7 @@ Matriz* multiplicar_matrizes(Matriz* m1, Matriz* m2, char* tipoExecucao, char* n
     if (strcmp(tipoExecucao, "S") == 0 || strcmp(tipoExecucao, "s") == 0) {
         return multiplicar_matrizes_sequencial(m1, m2, nomeAnalise);
     } else if (strcmp(tipoExecucao, "PP") == 0 || strcmp(tipoExecucao, "pp") == 0) {
-        return multiplicar_matrizes_paralelo_processos(m1, m2);
+        return multiplicar_matrizes_paralelo_processos(m1, m2, threadsOuProcessosDivisor);
     } else if (strcmp(tipoExecucao, "PT") == 0 || strcmp(tipoExecucao, "pt") == 0) {
         return multiplicar_matrizes_paralelo_threads(m1, m2, threadsOuProcessosDivisor);
     } else {
@@ -96,6 +96,8 @@ Matriz* multiplicar_matrizes_sequencial(Matriz* m1, Matriz* m2, char* nomeAnalis
 }
 
 void* processar_elementos(void* arg) {
+    clock_t start_time = clock();
+    
     ThreadData* data = (ThreadData*)arg;
 
     for (int i = 0; i < data->qtdElementos; i++) {
@@ -109,8 +111,9 @@ void* processar_elementos(void* arg) {
         printf("Elemento [%d][%d] = %.2f\n", elem->linha, elem->colunaInicio, soma);
     }
 
-    free(data->elementos);
-    free(data);
+    clock_t end_time = clock();
+    double tempo_calculo = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("Tempo de cálculo: %.6f segundos\n", tempo_calculo);
 
     return NULL;
 }
@@ -135,14 +138,43 @@ Matriz* multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, int thread
         pthread_join(threads[i], NULL);
     }
 
+    free(threads);
+    free(matriz_separada->elementosAgrupados);
+    free(matriz_separada);
+
     return NULL;
 }
 
+Matriz* multiplicar_matrizes_paralelo_processos(Matriz* m1, Matriz* m2, int threadsOuProcessosDivisor) {
+    Agrupador* matriz_separada = agrupar_elementos(m1, m2, threadsOuProcessosDivisor);
 
+    ThreadData* arrayProcessos = matriz_separada->elementosAgrupados;
+    int quantidadeProcessos = matriz_separada->quantidadeExecutores;
 
-Matriz* multiplicar_matrizes_paralelo_processos(Matriz* m1, Matriz* m2) {
-    fprintf(stderr, "Multiplicação paralela com processos não implementada ainda.\n");
-    desalocar_matriz(m1);
-    desalocar_matriz(m2);
+    for (int i = 0; i < quantidadeProcessos; i++) {
+        pid_t pid = fork();
+        if (pid < 0) {
+            perror("Erro no fork");
+            exit(1);
+        } else if (pid == 0) {
+            ThreadData* data = malloc(sizeof(ThreadData));
+            *data = arrayProcessos[i];
+            
+            processar_elementos(data);
+
+            _exit(0);
+        }
+    }
+
+    for (int i = 0; i < quantidadeProcessos; i++) {
+        wait(NULL);
+    }
+    
+    for (int i = 0; i < quantidadeProcessos; i++) {
+        free(arrayProcessos[i].elementos);
+    }
+    free(matriz_separada->elementosAgrupados);
+    free(matriz_separada);
+
     return NULL;
 }
