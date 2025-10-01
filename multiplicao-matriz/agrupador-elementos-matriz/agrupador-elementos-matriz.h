@@ -18,6 +18,7 @@ typedef struct {
     int id_executor;           
     char* nomeAnalise;         
     char* tipo_execucao;       
+    int versao;
 } ThreadData;
 
 void* processar_elementos(void* arg);

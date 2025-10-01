@@ -36,9 +36,9 @@ int main() {
         
         for(int i = 0; i < 10; i++){
             printf("Execução %d/10\n", i+1);
-            multiplicar_matrizes(m1, m2, "S", nomeAnalise, 1);
-            multiplicar_matrizes(m1, m2, "PT", nomeAnalise, divisor);
-            multiplicar_matrizes(m1, m2, "PP", nomeAnalise, divisor);
+            multiplicar_matrizes(m1, m2, "S", nomeAnalise, 1, i+1);
+            multiplicar_matrizes(m1, m2, "PT", nomeAnalise, divisor, i+1);
+            multiplicar_matrizes(m1, m2, "PP", nomeAnalise, divisor, i+1);
         }
         
         desalocar_matriz(m1);
@@ -69,8 +69,8 @@ int main() {
         
         for(int i = 0; i < 10; i++){
             printf("Execução %d/10\n", i+1);
-            multiplicar_matrizes(m1_e2, m2_e2, "PT", nomeAnalise, divisor);
-            multiplicar_matrizes(m1_e2, m2_e2, "PP", nomeAnalise, divisor);
+            multiplicar_matrizes(m1_e2, m2_e2, "PT", nomeAnalise, divisor, i+1);
+            multiplicar_matrizes(m1_e2, m2_e2, "PP", nomeAnalise, divisor, i+1);
         }
     }
 

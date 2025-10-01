@@ -32,7 +32,8 @@ Agrupador* agrupar_elementos(Matriz* m1, Matriz* m2, int divisor) {
             .qtdElementos = elementosNestaThread,
             .id_executor = 0,
             .nomeAnalise = NULL,        
-            .tipo_execucao = NULL  
+            .tipo_execucao = NULL,
+            .versao = 0
         };
     }
 

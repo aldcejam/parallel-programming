@@ -3,13 +3,13 @@
 #include <pthread.h>
 #include <string.h>
 
-FILE* gerar_arquivo_resultado(const char* nomeAnalise, const char* tipo_execucao, const char* nomeArquivo) {
+FILE* gerar_arquivo_resultado(const char* nomeAnalise, const char* tipo_execucao, const char* nomeArquivo, int versao) {
     if (!tipo_execucao || !nomeAnalise || !nomeArquivo) return NULL;
 
     int tamanho = snprintf(
         NULL, 0,
-        "resultados/%s/%s/%s.txt",
-        nomeAnalise, tipo_execucao, nomeArquivo
+        "resultados/%s/versao_%d/%s/%s.txt",
+        nomeAnalise, versao, tipo_execucao, nomeArquivo
     );
 
     char* caminho = malloc(tamanho + 1);
@@ -17,8 +17,8 @@ FILE* gerar_arquivo_resultado(const char* nomeAnalise, const char* tipo_execucao
 
     snprintf(
         caminho, tamanho + 1,
-        "resultados/%s/%s/%s.txt",
-        nomeAnalise, tipo_execucao, nomeArquivo
+        "resultados/%s/versao_%d/%s/%s.txt",
+        nomeAnalise, versao, tipo_execucao, nomeArquivo
     );
 
     char* dir_path = malloc(tamanho + 1);
@@ -27,7 +27,7 @@ FILE* gerar_arquivo_resultado(const char* nomeAnalise, const char* tipo_execucao
         return NULL;
     }
     
-    snprintf(dir_path, tamanho + 1, "resultados/%s/%s", nomeAnalise, tipo_execucao);
+    snprintf(dir_path, tamanho + 1, "resultados/%s/versao_%d/%s", nomeAnalise, versao, tipo_execucao);
     
     char* p = dir_path;
     while (*p != '\0') {
@@ -47,22 +47,23 @@ FILE* gerar_arquivo_resultado(const char* nomeAnalise, const char* tipo_execucao
     return arquivo;
 }
 
-void multiplicar_matrizes(Matriz* m1, Matriz* m2, char* tipoExecucao, char* nomeAnalise, int threadsOuProcessosDivisor) {
+
+void multiplicar_matrizes(Matriz* m1, Matriz* m2, char* tipoExecucao, char* nomeAnalise, int threadsOuProcessosDivisor, int versao) {
     if (strcmp(tipoExecucao, "S") == 0 || strcmp(tipoExecucao, "s") == 0) {
-        return multiplicar_matrizes_sequencial(m1, m2, nomeAnalise);
+        multiplicar_matrizes_sequencial(m1, m2, nomeAnalise, versao);
     } else if (strcmp(tipoExecucao, "PP") == 0 || strcmp(tipoExecucao, "pp") == 0) {
-        multiplicar_matrizes_paralelo_processos(m1, m2, nomeAnalise, threadsOuProcessosDivisor);
+        multiplicar_matrizes_paralelo_processos(m1, m2, nomeAnalise, threadsOuProcessosDivisor, versao);
     } else if (strcmp(tipoExecucao, "PT") == 0 || strcmp(tipoExecucao, "pt") == 0) {
-        multiplicar_matrizes_paralelo_threads(m1, m2, nomeAnalise, threadsOuProcessosDivisor);
+        multiplicar_matrizes_paralelo_threads(m1, m2, nomeAnalise, threadsOuProcessosDivisor, versao);
     } else {
         fprintf(stderr, "Tipo de execução inválido. Use 'S', 'PT' ou 'PP'.\n");
     }
 }
 
-void multiplicar_matrizes_sequencial(Matriz* m1, Matriz* m2, char* nomeAnalise) {
+void multiplicar_matrizes_sequencial(Matriz* m1, Matriz* m2, char* nomeAnalise, int versao) {
     char nomeArquivo[100];
     snprintf(nomeArquivo, sizeof(nomeArquivo), "%dx%d", m1->qtdLinhas, m2->qtdColunas);
-    FILE* arquivo = gerar_arquivo_resultado(nomeAnalise, "sequencial", nomeArquivo);
+    FILE* arquivo = gerar_arquivo_resultado(nomeAnalise, "sequencial", nomeArquivo, versao);
     Matriz* produto = alocar_matriz(m1->qtdLinhas, m2->qtdColunas);
     if (!produto) return;
 
@@ -91,13 +92,14 @@ void multiplicar_matrizes_sequencial(Matriz* m1, Matriz* m2, char* nomeAnalise) 
     fprintf(arquivo, "%.6f", tempo_calculo);
 
     fclose(arquivo);
+    desalocar_matriz(produto);
 }
 
 void* processar_elementos(void* arg) {
     ThreadData* data = (ThreadData*)arg;
     char nomeArquivo[30];
     snprintf(nomeArquivo, sizeof(nomeArquivo), "%dx%d-%d", data->m1->qtdLinhas, data->m2->qtdColunas, data->id_executor);
-    FILE* arquivo = gerar_arquivo_resultado(data->nomeAnalise, data->tipo_execucao, nomeArquivo);
+    FILE* arquivo = gerar_arquivo_resultado(data->nomeAnalise, data->tipo_execucao, nomeArquivo, data->versao);
 
     if (arquivo == NULL) {
         perror("Erro ao abrir o arquivo para escrita");
@@ -124,7 +126,7 @@ void* processar_elementos(void* arg) {
     return NULL;
 }
 
-void multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, char* nomeAnalise, int threadsOuProcessosDivisor) {
+void multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, char* nomeAnalise, int threadsOuProcessosDivisor, int versao) {
     Agrupador* matriz_separada = agrupar_elementos(m1, m2, threadsOuProcessosDivisor);
 
     ThreadData* arrayThreads = matriz_separada->elementosAgrupados;
@@ -136,6 +138,7 @@ void multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, char* nomeAna
         ThreadData* threadData = malloc(sizeof(ThreadData));
         *threadData = arrayThreads[i];
         threadData->id_executor = i;
+        threadData->versao = versao;
         
         threadData->nomeAnalise = malloc(strlen(nomeAnalise) + 1);
         strcpy(threadData->nomeAnalise, nomeAnalise);
@@ -156,11 +159,10 @@ void multiplicar_matrizes_paralelo_threads(Matriz* m1, Matriz* m2, char* nomeAna
     free(threads);
     free(matriz_separada->elementosAgrupados);
     free(matriz_separada);
-
-    return;
 }
 
-void multiplicar_matrizes_paralelo_processos(Matriz* m1, Matriz* m2, char* nomeAnalise, int threadsOuProcessosDivisor) {
+void multiplicar_matrizes_paralelo_processos(Matriz* m1, Matriz* m2, char* nomeAnalise, int threadsOuProcessosDivisor, int versao) {
+
     Agrupador* matriz_separada = agrupar_elementos(m1, m2, threadsOuProcessosDivisor);
 
     ThreadData* arrayProcessos = matriz_separada->elementosAgrupados;
@@ -175,6 +177,7 @@ void multiplicar_matrizes_paralelo_processos(Matriz* m1, Matriz* m2, char* nomeA
             ThreadData* data = malloc(sizeof(ThreadData));
             *data = arrayProcessos[i];
             data->id_executor = i;
+            data->versao = versao;
             
             data->nomeAnalise = malloc(strlen(nomeAnalise) + 1);
             strcpy(data->nomeAnalise, nomeAnalise);
@@ -192,10 +195,10 @@ void multiplicar_matrizes_paralelo_processos(Matriz* m1, Matriz* m2, char* nomeA
         wait(NULL);
     }
     
-    // Liberar memória dos processos (no pai)
     for (int i = 0; i < quantidadeProcessos; i++) {
         free(arrayProcessos[i].elementos);
     }
     free(matriz_separada->elementosAgrupados);
     free(matriz_separada);
 }
+
